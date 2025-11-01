@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thoughts & Reflections - Personal Blog</title>
-    <meta name="description" content="A curated collection of thoughts, stories, and insights">
+    <meta name="description" content="Not every story needs an ending — some just need to be told.">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -19,6 +19,7 @@
             --dark-alt: #141414;
             --accent: #00d4ff;
             --accent-pink: #ff006e;
+            --accent-purple: #8b5cf6;
             --text: #ffffff;
             --text-dim: #888888;
             --glass: rgba(255, 255, 255, 0.05);
@@ -968,8 +969,8 @@
     <div id="homePage" class="page active">
         <div class="container">
             <div class="hero">
-                <h1>Thoughts & Reflections</h1>
-                <p>A curated collection of musings, stories, and perspectives from my journey through life and technology.</p>
+                <h1>Unfiltered !</h1>
+                <p>Not every story needs an ending — some just need to be told.</p>
                 <button class="hero-cta" onclick="showPage('posts')">Explore Posts</button>
             </div>
         </div>
@@ -1014,11 +1015,14 @@
             </div>
             <div class="write-container" style="max-width: 800px; margin: 0 auto;">
                 <p style="font-size: 1.2em; line-height: 2; color: rgba(255,255,255,0.8);">
-                    This is a space where I document my journey, share insights, and reflect on the things that matter. 
-                    Whether it's technology, life lessons, or random musings, you'll find it all here.
+                    There are days when everything feels a bit too fast, and writing helps me slow down. This space began as my way to pause, reflect, and put my thoughts into words.
+
+I write to make sense of life — the lessons, the struggles, and the small moments that often go unnoticed. Through these posts, I hope to share a bit of motivation, a touch of calm, and honest thoughts that come straight from the heart.
+
+
+
                     <br><br>
-                    Feel free to explore, read, and connect. Every post is a piece of my story, and I'm glad you're here to be part of it.
-                </p>
+                    If you’re someone who loves to think, feel, and grow, you might find something here that speaks to you.
             </div>
         </div>
     </div>
@@ -1088,12 +1092,12 @@
 
     <footer>
         <div class="container footer-content">
-            <p>&copy; 2024 Reflections Blog. All rights reserved.</p>
-            <p>Sharing thoughts, one post at a time.</p>
+            <p>&copy; 2025 Reflections Blog</p>
+            <p>A space by Dhivya | where thoughts flow unfiltered.</p>
             <div class="social-links">
-                <a href="#" class="social-link">📧</a>
-                <a href="#" class="social-link">💼</a>
-                <a href="#" class="social-link">🐦</a>
+                <a href="https://www.linkedin.com/in/dhivyas03/" class="social-link">📧</a>
+                <a href="https://gmail.com/" class="social-link">💼</a>
+               
             </div>
         </div>
     </footer>
@@ -1103,7 +1107,33 @@
         let isAdmin = false;
         let currentPost = null;
         let tags = [];
-        const ADMIN_PASSWORD = "myjournal123";
+        const ADMIN_PASSWORD = "Dhivyasiva@03";
+
+        // Fallback storage wrapper (uses localStorage if window.storage unavailable)
+        const storage = window.storage || {
+            async set(key, value, encrypted = false) {
+                localStorage.setItem(key, value);  // No encryption for simplicity
+                return true;
+            },
+            async get(key, encrypted = false) {
+                return localStorage.getItem(key);
+            },
+            async list(prefix, encrypted = false) {
+                const keys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith(prefix)) {
+                        keys.push({ name: key, value: localStorage.getItem(key) });
+                    }
+                }
+                return { keys };
+            },
+            async delete(key, encrypted = false) {
+                localStorage.removeItem(key);
+                return true;
+            }
+        };
+        window.storage = storage;  // Override for consistency
 
         function showAdminLogin() {
             if (isAdmin) {
@@ -1199,7 +1229,7 @@
             tagElement.className = 'tag-item';
             tagElement.innerHTML = `
                 ${tag}
-                <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
+                <span class="tag-remove" onclick="removeTag('${tag.replace(/'/g, "\\'")}')">×</span>
             `;
             tagsContainer.insertBefore(tagElement, tagInput);
         }
@@ -1280,8 +1310,8 @@
                     const postsData = await Promise.all(
                         result.keys.map(async key => {
                             try {
-                                const data = await window.storage.get(key, true);
-                                return data ? JSON.parse(data.value) : null;
+                                const data = await window.storage.get(key.name, true);
+                                return data ? JSON.parse(data) : null;
                             } catch {
                                 return null;
                             }
@@ -1325,7 +1355,7 @@
                         <div class="post-read-time">${readTime} min read</div>
                     </div>
                     <h3 class="post-title">${escapeHtml(post.title)}</h3>
-                    <p class="post-preview">${escapeHtml(post.content)}</p>
+                    <p class="post-preview">${escapeHtml(post.content.substring(0, 150) + '...')}</p>
                     <div class="post-footer">
                         <div class="post-tags">${tagsHTML}</div>
                         <div class="read-more">Read More</div>
@@ -1335,7 +1365,15 @@
         }
 
         function loadFeaturedPost() {
-            if (posts.length === 0) return;
+            if (posts.length === 0) {
+                document.getElementById('featuredPost').innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Featured Post Yet</h3>
+                        <p>Create your first post to feature it here.</p>
+                    </div>
+                `;
+                return;
+            }
             
             const featured = posts[0];
             const readTime = calculateReadTime(featured.content);
@@ -1348,7 +1386,7 @@
                     <div class="featured-content">
                         <div class="featured-date">${formatDate(featured.timestamp)}</div>
                         <h2 class="featured-title">${escapeHtml(featured.title)}</h2>
-                        <p class="featured-excerpt">${escapeHtml(featured.content.substring(0, 200))}...</p>
+                        <p class="featured-excerpt">${escapeHtml(featured.content.substring(0, 200) + '...')}</p>
                         <div class="featured-tags">${tagsHTML}</div>
                         <div class="read-time">📖 ${readTime} min read</div>
                     </div>
@@ -1361,7 +1399,12 @@
             const grid = document.getElementById('recentPosts');
             
             if (recent.length === 0) {
-                grid.innerHTML = '';
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Recent Posts</h3>
+                        <p>Start writing to see them here.</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -1411,12 +1454,14 @@
 
             try {
                 await window.storage.set(`post:${post.id}`, JSON.stringify(post), true);
+                posts.unshift(post);  // Add to front for sorting
                 showSuccessMessage('Post published successfully!');
                 setTimeout(() => {
                     showPage('posts');
                 }, 1500);
                 return true;
             } catch (error) {
+                console.error('Publish error:', error);
                 alert('Failed to publish post. Please try again.');
                 return false;
             }
@@ -1431,7 +1476,7 @@
                     posts = posts.filter(p => p.id !== currentPost.id);
                     closeModal();
                     showSuccessMessage('Post deleted successfully');
-                    showPage('posts');
+                    loadPosts();  // Reload to update display
                 } catch (error) {
                     alert('Failed to delete post');
                 }
